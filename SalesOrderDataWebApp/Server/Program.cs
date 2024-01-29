@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SalesOrderDataWebApp.Server.Mappers;
-using SalesOrderDataWebApp.Server.Models;
+using SalesOrderDataWebApp.Server.DB;
 using SalesOrderDataWebApp.Server.Services;
 using SalesOrderDataWebApp.Server.Repositories.InterfaceImplementations;
 

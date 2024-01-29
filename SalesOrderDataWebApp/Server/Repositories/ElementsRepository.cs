@@ -1,4 +1,4 @@
-﻿using SalesOrderDataWebApp.Server.Models;
+﻿using SalesOrderDataWebApp.Server.DB;
 using SalesOrderDataWebApp.Server.Repositories.InterfaceImplementations;
 using SalesOrderDataWebApp.Shared.Models;
 
@@ -24,7 +24,6 @@ namespace SalesOrderDataWebApp.Server.Services
                 throw new Exception($"Error while adding element. Message: {ex.Message}");
             }        
         }
-
         public bool Exists(int id)
         {
             return _context.Elements.Any(e => e.Id == id);

@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using SalesOrderDataWebApp.Server.Models;
+using SalesOrderDataWebApp.Server.DB;
 
 #nullable disable
 
 namespace SalesOrderDataWebApp.Server.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240129162655_Init")]
+    [Migration("20240129192713_Init")]
     partial class Init
     {
         /// <inheritdoc />

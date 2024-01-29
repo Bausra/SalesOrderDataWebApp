@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SalesOrderDataWebApp.Shared.Models;
 
-namespace SalesOrderDataWebApp.Server.Models
+namespace SalesOrderDataWebApp.Server.DB
 {
     public class DatabaseContext : DbContext
     {

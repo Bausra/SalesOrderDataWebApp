@@ -1,4 +1,4 @@
-﻿using SalesOrderDataWebApp.Server.Models;
+﻿using SalesOrderDataWebApp.Server.DB;
 using SalesOrderDataWebApp.Server.Repositories.InterfaceImplementations;
 using SalesOrderDataWebApp.Shared.Models;
 
