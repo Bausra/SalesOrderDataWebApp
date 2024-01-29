@@ -1,0 +1,73 @@
+﻿@page "/order/add"
+@page "/order/edit/{orderId:int}"
+@using SalesOrderDataWebApp.Shared.Dto
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h1>@Title order</h1>
+<hr />
+<EditForm Model="@order" OnValidSubmit="SaveOrder">
+    <DataAnnotationsValidator />
+    @if (order.Id != 0)
+    {
+        <div class="mb-3">
+            <label for="orderId" class="form-label">Order ID</label>
+            <div class="col-md-4">
+                <Input id="orderId" class="form-control" value="@order.Id" readonly/>
+            </div>
+        </div>
+    }
+    <div class="mb-3">
+        <label for="buyerName" class="form-label">Buyer Name</label>
+        <div class="col-md-4">
+            <InputText id="buyerName" class="form-control" @bind-Value="order.BuyerName" />
+        </div>
+        <ValidationMessage For="@(() => order.BuyerName)" />
+    </div>
+    <div class="mb-3">
+        <label for="state" class="form-label">State</label>
+        <div class="col-md-4">
+            <InputText id="state" class="form-control" @bind-Value="order.State" />
+        </div>
+        <ValidationMessage For="@(() => order.State)" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-outline-danger">Save</button>
+        <button class="btn btn-outline-dark" @onclick="Cancel">Cancel</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int orderId { get; set; }
+    protected string Title = "Add";
+    protected OrderDto order = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (orderId != 0)
+        {
+            Title = "Edit";
+            order = await Http.GetFromJsonAsync<OrderDto>($"api/Orders/{orderId}");
+        }
+    }
+
+
+    protected async Task SaveOrder()
+    {
+        if (order.Id != 0)
+        {
+            await Http.PutAsJsonAsync("api/Orders", order);
+        }
+        else
+        {
+            await Http.PostAsJsonAsync("api/Orders", order);
+        }
+        Cancel();
+    }
+
+    public void Cancel()
+    {
+        NavigationManager.NavigateTo("/orders/");
+    }
+}

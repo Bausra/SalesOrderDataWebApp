@@ -1,0 +1,99 @@
+﻿@page "/element/add/{orderId:int}/{windowId:int}"
+@page "/element/edit/{orderId:int}/{windowId:int}/{elementId:int}"
+@using SalesOrderDataWebApp.Shared.Dto
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h1>@Title element</h1>
+<hr />
+
+<EditForm Model="@element" OnValidSubmit="SaveElement">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label for="elementNo" class="form-label">Element No.</label>
+        <div class="col-md-4">
+            @if (element.Id == 0)
+            {
+                <InputNumber id="elementNo" class="form-control" @bind-Value="element.ElementNo" />
+            }
+            else
+            {
+                <Input id="elementNo" class="form-control" value="@element.ElementNo" readonly/>
+            }
+        </div>
+        <ValidationMessage For="@(() => element.ElementNo)" />
+    </div>
+    <div class="mb-3">
+        <label for="width" class="form-label">Width</label>
+        <div class="col-md-4">
+            <InputNumber id="width" class="form-control" @bind-Value="element.Width" />
+        </div>
+        <ValidationMessage For="@(() => element.Width)" />
+    </div>
+    <div class="mb-3">
+        <label for="height" class="form-label">Height</label>
+        <div class="col-md-4">
+            <InputNumber id="height" class="form-control" @bind-Value="element.Height" />
+        </div>
+        <ValidationMessage For="@(() => element.Height)" />
+    </div>
+    <div class="mb-3">
+        <label for="elementType" class="form-label">Element Type</label>
+        <div class="col-md-4">
+            @if (element.Id == 0)
+            {
+                <InputText id="elementType" class="form-control" @bind-Value="element.ElementType" />
+            }
+            else
+            {
+                <Input id="elementType" class="form-control" value="@element.ElementType" readonly/>
+            }
+        </div>
+        <ValidationMessage For="@(() => element.ElementType)" />
+    </div>
+    <br />
+    <div class="form-group">
+        <button type="submit" class="btn btn-outline-danger">Save</button>
+        <button class="btn btn-outline-dark" @onclick="Cancel">Cancel</button>
+    </div>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public int orderId { get; set; }
+    [Parameter]
+    public int windowId { get; set; }
+    [Parameter]
+    public int elementId { get; set; }
+    protected string Title = "Add";
+    protected ElementDto element = new ();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (elementId != 0)
+        {
+            Title = "Edit";
+            element = await Http.GetFromJsonAsync<ElementDto>($"api/Elements/{elementId}");
+        }
+    }
+
+    protected async Task SaveElement()
+    {
+        if (element.Id != 0)
+        {
+            await Http.PutAsJsonAsync("api/Elements", element);
+        }
+        else
+        {
+            element.WindowId = windowId;
+            await Http.PostAsJsonAsync("api/Elements", element);
+        }
+        Cancel();
+    }
+
+    public void Cancel()
+    {
+        NavigationManager.NavigateTo($"/orders/{orderId}/{windowId}");
+    }
+}

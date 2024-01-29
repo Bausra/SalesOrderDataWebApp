@@ -1,0 +1,77 @@
+﻿@page "/window/add/{orderId:int}"
+@page "/window/edit/{orderId:int}/{windowId:int}"
+@using SalesOrderDataWebApp.Shared.Dto
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h1>@Title window</h1>
+<hr />
+
+<EditForm Model="@window" OnValidSubmit="SaveWindow">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label for="quantity" class="form-label">Quantity</label>
+        <div class="col-md-4">
+            @if (window.Id == 0)
+            {
+                <InputNumber id="quantity" class="form-control" @bind-Value="window.Quantity" ParsingErrorMessage="Enter a whole number." />
+            }
+            else
+            {
+                <Input class="form-control" value="@window.Quantity" readonly/>
+            }
+        </div>
+        <ValidationMessage For="@(() => window.Quantity)" />
+    </div>
+    <div class="mb-3">
+        <label for="windowName" class="form-label">Window Name</label>
+        <div class="col-md-4">
+            <InputText id="windowName" class="form-control" @bind-Value="window.WindowName" />
+        </div>
+        <ValidationMessage For="@(() => window.WindowName)" />
+    </div>
+    <br />
+    <div class="form-group">
+        <button type="submit" class="btn btn-outline-danger">Save</button>
+        <button class="btn btn-outline-dark" @onclick="Cancel">Cancel</button>
+    </div>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public int orderId { get; set; }
+    [Parameter]
+    public int windowId { get; set; }
+    protected string Title = "Add";
+    protected WindowDto window = new();
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (windowId != 0)
+        {
+            Title = "Edit";
+            window = await Http.GetFromJsonAsync<WindowDto>($"api/Windows/{windowId}");
+        }
+    }
+
+    protected async Task SaveWindow()
+    {
+        if (window.Id != 0)
+        {
+            await Http.PutAsJsonAsync("api/Windows", window);
+        }
+        else
+        {
+            window.OrderId = orderId;
+            await Http.PostAsJsonAsync("api/Windows", window);
+        }
+        Cancel();
+    }
+
+    public void Cancel()
+    {
+        NavigationManager.NavigateTo($"/orders/{orderId}");
+    }
+}

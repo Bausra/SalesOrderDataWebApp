@@ -1,0 +1,238 @@
+﻿@page "/orders"
+@page "/orders/{selectedOrderId:int}"
+@page "/orders/{selectedOrderId:int}/{selectedWindowId:int}"
+@using SalesOrderDataWebApp.Shared.Dto
+@inject HttpClient Http
+
+
+<h1>Orders</h1>
+<hr/>
+<br/>
+
+<div class="gridViewOuter">
+    <div>
+        @if (orderList == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <div class="col-md-6">
+                <a href='/order/add' class="btn btn-secondary" role="button">
+                    Add Order
+                </a>
+            </div>
+            <br />
+            <div>
+                <table class="table table-hover align-middle">
+                    <thead class="bg-secondary bg-gradienty bg-opacity-25">
+                        <tr>
+                            <th>ID</th>
+                            <th>Buyer Name</th>
+                            <th>State</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in orderList)
+                        {
+                            <tr @onclick="(async () => await OrderSelected(order.Id))" class="@(selectedOrderId == @order.Id  ?  "table-active" : "")" >
+                                <td>@order.Id</td>
+                                <td>@order.BuyerName</td>
+                                <td>@order.State</td>
+                                <td @onclick:stopPropagation="true">
+                                    <div class="buttonAllign">
+                                        <a href='/order/edit/@order.Id' class="btn btn-outline-dark" role="button">
+                                            Edit
+                                        </a>
+
+                                        <button type="submit" class="btn btn-outline-danger" @onclick="(async () => await RemoveOrder(order.Id))">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div>
+        <div class="windowMargin">
+            @if (selectedOrderId != 0)
+            {
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href='/window/add/@selectedOrderId' class="btn btn-secondary" role="button">
+                            Add Window
+                        </a>
+                    </div>
+                </div>
+            }
+            
+            <br/>
+
+            @if (windowsList.Any())
+            {
+                <table class="table table-hover align-middle">
+                    <thead class="bg-secondary bg-gradienty bg-opacity-25">
+                        <tr>
+                            <th>Quantity</th>
+                            <th>Window Name</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var window in windowsList)
+                        {
+                            <tr @onclick="(async () => await WindowSelected(window.Id))" class="@(selectedWindowId == @window.Id  ?  "table-active" : "")">
+                                <td>@window.Quantity</td>
+                                <td>@window.WindowName</td>
+                                <td @onclick:stopPropagation="true">
+                                    <div class="buttonAllign">
+                                        <a href='/window/edit/@window.OrderId/@window.Id' class="btn btn-outline-dark" role="button">
+                                            Edit
+                                        </a>
+                                        <button type="submit" class="btn btn-outline-danger" @onclick="(async () => await RemoveWindow(window.Id))">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <div>
+            @if (selectedWindowId != 0)
+            {
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href='/element/add/@selectedOrderId/@selectedWindowId' class="btn btn-secondary" role="button">
+                            Add Element
+                        </a>
+                    </div>
+                </div>
+            }
+
+            <br />
+
+            @if (elementsList.Any())
+            {
+                <table class="table table-hover align-middle">
+                    <thead class="bg-secondary bg-gradienty bg-opacity-25">
+                        <tr>
+                            <th>Element No.</th>
+                            <th>Width</th>
+                            <th>Height</th>
+                            <th>Element Type</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var element in elementsList)
+                        {
+                            <tr>
+                                <td>@element.ElementNo</td>
+                                <td>@element.Width</td>
+                                <td>@element.Height</td>
+                                <td>@element.ElementType</td>
+                                <td @onclick:stopPropagation="true">
+                                    <div class="buttonAllign">
+                                        <a href='/element/edit/@selectedOrderId/@selectedWindowId/@element.Id' class="btn btn-outline-dark" role="button">
+                                            Edit
+                                        </a>
+                                        <button type="submit" class="btn btn-outline-danger" @onclick="(async () => await RemoveElement(element.Id))">
+                                            Delete
+                                        </button>
+                                    </div
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    [Parameter]
+    public int selectedOrderId { get; set; }
+    [Parameter]
+    public int selectedWindowId { get; set; }
+
+    protected List<OrderDto> orderList;
+    protected List<OrderDto> searchOrderData;
+    protected List<WindowDto> windowsList = new();
+    protected List<ElementDto> elementsList = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetOrders();
+        await GetWindowsForOrder(selectedOrderId);
+        await GetElementsForWindow(selectedWindowId);
+    }
+
+
+    protected async Task GetOrders()
+    {
+        orderList = await Http.GetFromJsonAsync<List<OrderDto>>("api/Orders");
+        searchOrderData = orderList;
+    }
+
+    protected async Task OrderSelected(int orderId)
+    {
+        selectedOrderId = orderId;
+        selectedWindowId = 0;
+        elementsList.Clear();
+        await GetWindowsForOrder(orderId);
+    }
+
+    protected async Task GetWindowsForOrder(int orderId)
+    {
+        windowsList = await Http.GetFromJsonAsync<List<WindowDto>>($"api/Windows/{orderId}/orders");
+    }
+
+    protected async Task RemoveOrder(int orderId)
+    {
+        await Http.DeleteAsync($"api/Orders/{orderId}");
+        windowsList.Clear();
+        elementsList.Clear();
+        selectedOrderId = 0;
+        selectedWindowId = 0;       
+        await GetOrders();
+    }
+
+    protected async Task WindowSelected(int windowId)
+    {
+        selectedWindowId = windowId;
+        await GetElementsForWindow(windowId);
+    }
+
+    protected async Task RemoveWindow(int windowId)
+    {
+        await Http.DeleteAsync($"api/Windows/{windowId}");
+        elementsList.Clear();
+        selectedWindowId = 0;
+        await GetWindowsForOrder(selectedOrderId);
+    }
+
+    protected async Task RemoveElement(int elementId)
+    {
+        await Http.DeleteAsync($"api/Elements/{elementId}");
+        await GetElementsForWindow(selectedWindowId);
+    }
+
+    protected async Task GetElementsForWindow(int windowId)
+    {
+        elementsList = await Http.GetFromJsonAsync<List<ElementDto>>($"api/Elements/{windowId}/windows");
+    }
+}

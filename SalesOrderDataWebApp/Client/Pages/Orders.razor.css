@@ -1,0 +1,25 @@
+﻿.gridViewOuter {
+    display: grid;
+    grid-template-columns: 30% 64%;
+    grid-template-rows: auto;
+    gap: 5%;
+    padding: 10px;
+    margin: 0;
+}
+
+.gridViewInner {
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: 50% 50%;
+    gap: 0;
+    padding: 10px;
+    margin: 0;
+}
+
+.windowMargin{
+    margin-bottom: 5%
+}
+
+.buttonAllign{
+    float: right;
+}
